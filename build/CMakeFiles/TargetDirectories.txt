@@ -1,3 +1,0 @@
-/Users/rsc/Documents/coding/workspace/eltitnu/build/CMakeFiles/main.dir
-/Users/rsc/Documents/coding/workspace/eltitnu/build/CMakeFiles/edit_cache.dir
-/Users/rsc/Documents/coding/workspace/eltitnu/build/CMakeFiles/rebuild_cache.dir
