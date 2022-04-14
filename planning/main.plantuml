@@ -1,4 +1,7 @@
 @startuml test
-scale 3
-Alice -> Bob : test
+class Window {
+    title:string
+    +init(w:float, h:float):bool
+    +destroy():bool
+}
 @enduml
