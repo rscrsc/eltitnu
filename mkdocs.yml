@@ -1,0 +1,40 @@
+site_name: Eltitnu
+site_description: Eltitnu 的文档
+repo_name: Eltitnu
+repo_url: https://github.com/rscrsc/eltitnu
+
+nav:
+  - 概述: index.md
+  - 功能:
+    - function/index.md
+  - 技术: tech/index.md
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+  palette:
+    - media: "(prefers-color-scheme: light)" 
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)" 
+      scheme: slate
+      primary: red
+      accent: red
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
