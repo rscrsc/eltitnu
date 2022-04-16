@@ -3,8 +3,13 @@ cmake_minimum_required(VERSION 3.0.0)
 set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
 
 project(main)
-file(GLOB_RECURSE src "src/*.cpp" "src/*.h")
-add_executable(main ${src})
+add_executable
+(
+     main
+     "src/main.cpp"
+     "src/ShaderGen.cpp"
+     "src/ShaderGen.h"
+)
 
 # Libraries
 find_package(glm CONFIG REQUIRED)

@@ -64,6 +64,7 @@ ShaderGen::ShaderGen(const char *vertexPath, const char *fragmentPath)
         outputProgram = glCreateProgram();
         glAttachShader(outputProgram, vertexShader);
         glAttachShader(outputProgram, fragmentShader);
+        glLinkProgram(outputProgram);
         checkLinkErrors(outputProgram);
 }
 
