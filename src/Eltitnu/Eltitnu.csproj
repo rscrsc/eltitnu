@@ -4,6 +4,7 @@
     <RootNamespace>Eltitnu.Eltitnu</RootNamespace>
     <AssemblyName>Eltitnu.Eltitnu</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

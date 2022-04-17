@@ -12,7 +12,6 @@ namespace Eltitnu
             {
                 Size = new Vector2i(800, 600),
                 Title = "LearnOpenTK - Creating a Window",
-                // This is needed to run on macos
                 Flags = ContextFlags.ForwardCompatible,
             };
 
