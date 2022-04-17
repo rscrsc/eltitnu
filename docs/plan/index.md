@@ -19,7 +19,9 @@ classDiagram
         +render() //根据 GameObject 渲染画面
     }
 ```
+
 其中：
+
 - `init()` 用于加载着色器、纹理、世界
 - `processInput()` 用于处理用户输入
 - `update()` 用于根据输入更新 World
@@ -30,6 +32,7 @@ classDiagram
 将常用的 OpenGL 代码段进行封装，方便复用。
 
 主要包含：
+
 - 着色器类 `class Shader`
 - 2D纹理类 `class Texture2D`
 - ...
@@ -41,6 +44,7 @@ classDiagram
 初步确定使用 Singleton 设计模式，即只允许创建单一实例，将资源加载到该实例内的属性中，整个项目共享。
 
 对每种资源，需要编写：
+
 - `load`方法
 - `use`方法
 - `delete`方法 ***（？待定）***
