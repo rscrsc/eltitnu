@@ -8,7 +8,8 @@ nav:
   - 功能:
     - function/index.md
   - 技术: tech/index.md
-  - 测试: test.md
+  - 计划: 
+    - plan/index.md
 
 theme:
   name: material
