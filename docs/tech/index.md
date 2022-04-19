@@ -12,9 +12,9 @@
 已知在 `Windows` 平台上， `glfw` 的动态链接库需要手动更名为 `glfw3.dll` （默认有 `-x86` 或 `-x64` 后缀）。
 其它平台可能也存在此问题。不影响开发。
 
-## ~~非 Windows 平台开发者注意~~
-~~[中断性变更：仅在 Windows 上支持 System.Drawing.Common](https://aka.ms/systemdrawingnonwindows)~~
+## <del>非 Windows 平台开发者注意</del>
+<del>[中断性变更：仅在 Windows 上支持 System.Drawing.Common](https://aka.ms/systemdrawingnonwindows)</del>
 
-~~相应的解决措施已经被写入 `runtimeconfig.template.json` 中。~~
+<del>相应的解决措施已经被写入 `runtimeconfig.template.json` 中。</del>
 
-~~它应该会工作，但并未在非 Windows 平台上测试过。~~
+<del>它应该会工作，但并未在非 Windows 平台上测试过。</del>

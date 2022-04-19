@@ -37,17 +37,8 @@ classDiagram
 - 2D纹理类 `class Texture2D`
 - ...
 
-## 资源管理器类：ResourceManager
-
-由于需要加载外部文件（着色器源代码、纹理图片、存档文件等），将该部分常用功能封装，方便复用。OpenGL 工具类用到的资源也由这里加载。
-
-初步确定使用 Singleton 设计模式，即只允许创建单一实例，将资源加载到该实例内的属性中，整个项目共享。
-
-对每种资源，需要编写：
-
-- `load`方法
-- `use`方法
-- `delete`方法 ***（？待定）***
+## <del>资源管理器类：ResourceManager</del>
+***由于设计调整，不再使用***
 
 ## 游戏对象类：GameObject
 
@@ -55,6 +46,17 @@ classDiagram
 
 <u>***TODO: 根据游戏内容设计该类及其子类***</u>
 
+目前规划子类：
+```mermaid
+flowchart LR
+    GameObject-->Entity
+    GameObject-->UI
+    GameObject-->more1[...]
+    Entity-->Block
+    Entity-->Mob
+    Entity-->Item
+    Entity-->more2[...]
+```
 ## 世界类：World
 
 包含所有的游戏对象`gameObjectList`，由`update()`更新，并为`render()`提供信息。依赖于资源管理器类进行存档的读入和写出。
