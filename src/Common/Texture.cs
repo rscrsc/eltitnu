@@ -6,7 +6,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 
-
 namespace Eltitnu.Common
 {
     public class Texture
@@ -15,11 +14,11 @@ namespace Eltitnu.Common
 
         public static Texture LoadFromFile(string path)
         {
-            int handle = (int)GL.GenTexture();
+            TextureHandle handle = GL.GenTexture();
 
             // Bind the handle
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2d, new TextureHandle(handle));
+            GL.BindTexture(TextureTarget.Texture2d, handle);
 
             // Load the image
             using (var image = Image.Load<Rgba32>(path))
@@ -93,9 +92,9 @@ namespace Eltitnu.Common
             return new Texture(handle);
         }
 
-        public Texture(int glHandle)
+        public Texture(TextureHandle handle)
         {
-            Handle = new TextureHandle(glHandle);
+            Handle = handle;
         }
 
         // Activate texture
