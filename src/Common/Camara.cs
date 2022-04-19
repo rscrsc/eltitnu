@@ -1,5 +1,5 @@
-﻿using OpenTK.Mathematics;
-using System;
+﻿using System;
+using OpenTK.Mathematics;
 
 namespace Eltitnu.Common
 {
@@ -87,15 +87,15 @@ namespace Eltitnu.Common
         }
 
         // Get the view matrix using the amazing LookAt function described more in depth on the web tutorials
-        public Matrix4 GetViewMatrix()
+        public Matrix4d GetViewMatrix()
         {
-            return Matrix4.LookAt(Position, Position + _front, _up);
+            return Matrix4d.LookAt(Position, Position + _front, _up);
         }
 
         // Get the projection matrix using the same method we have used up until this point
-        public Matrix4 GetProjectionMatrix()
+        public Matrix4d GetProjectionMatrix()
         {
-            return Matrix4.CreatePerspectiveFieldOfView(_fov, AspectRatio, 0.01f, 100f);
+            return Matrix4d.CreatePerspectiveFieldOfView(_fov, AspectRatio, 0.01f, 100f);
         }
 
         // This function is going to update the direction vertices using some of the math learned in the web tutorials.

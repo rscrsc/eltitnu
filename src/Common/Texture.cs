@@ -1,32 +1,32 @@
-﻿using OpenTK.Graphics.OpenGL4;
-using System.Drawing;
-using System.Drawing.Imaging;
-using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
+﻿using System.IO;
+using System.Runtime.InteropServices;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.PixelFormats;
+
 
 namespace Eltitnu.Common
 {
-    // A helper class, much like Shader, meant to simplify loading textures.
     public class Texture
     {
-        public readonly int Handle;
+        public readonly TextureHandle Handle;
 
         public static Texture LoadFromFile(string path)
         {
-            // Generate handle
-            int handle = GL.GenTexture();
+            int handle = (int)GL.GenTexture();
 
             // Bind the handle
             GL.ActiveTexture(TextureUnit.Texture0);
-            GL.BindTexture(TextureTarget.Texture2D, handle);
-
-            // For this example, we're going to use .NET's built-in System.Drawing library to load textures.
+            GL.BindTexture(TextureTarget.Texture2d, new TextureHandle(handle));
 
             // Load the image
-            using (var image = new Bitmap(path))
+            using (var image = Image.Load<Rgba32>(path))
             {
                 // Our Bitmap loads from the top-left pixel, whereas OpenGL loads from the bottom-left, causing the texture to be flipped vertically.
                 // This will correct that, making the texture display properly.
-                image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                image.Mutate(c => c.Resize(30, 30));
 
                 // First, we get our pixels from the bitmap we loaded.
                 // Arguments:
@@ -36,31 +36,34 @@ namespace Eltitnu.Common
                 //   we only need ReadOnly.
                 //   Next is the pixel format we want our pixels to be in. In this case, ARGB will suffice.
                 //   We have to fully qualify the name because OpenTK also has an enum named PixelFormat.
-                var data = image.LockBits(
-                    new Rectangle(0, 0, image.Width, image.Height),
-                    ImageLockMode.ReadOnly,
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 
-                // Now that our pixels are prepared, it's time to generate a texture. We do this with GL.TexImage2D.
-                // Arguments:
-                //   The type of texture we're generating. There are various different types of textures, but the only one we need right now is Texture2D.
-                //   Level of detail. We can use this to start from a smaller mipmap (if we want), but we don't need to do that, so leave it at 0.
-                //   Target format of the pixels. This is the format OpenGL will store our image with.
-                //   Width of the image
-                //   Height of the image.
-                //   Border of the image. This must always be 0; it's a legacy parameter that Khronos never got rid of.
-                //   The format of the pixels, explained above. Since we loaded the pixels as ARGB earlier, we need to use BGRA.
-                //   Data type of the pixels.
-                //   And finally, the actual pixels.
-                GL.TexImage2D(TextureTarget.Texture2D,
-                    0,
-                    PixelInternalFormat.Rgba,
-                    image.Width,
-                    image.Height,
-                    0,
-                    PixelFormat.Bgra,
-                    PixelType.UnsignedByte,
-                    data.Scan0);
+                using (var ms = new MemoryStream())
+                {
+                    image.SaveAsBmp(ms);
+
+                    // Now that our pixels are prepared, it's time to generate a texture. We do this with GL.TexImage2D.
+                    // Arguments:
+                    //   The type of texture we're generating. There are various different types of textures, but the only one we need right now is Texture2D.
+                    //   Level of detail. We can use this to start from a smaller mipmap (if we want), but we don't need to do that, so leave it at 0.
+                    //   Target format of the pixels. This is the format OpenGL will store our image with.
+                    //   Width of the image
+                    //   Height of the image.
+                    //   Border of the image. This must always be 0; it's a legacy parameter that Khronos never got rid of.
+                    //   The format of the pixels, explained above. Since we loaded the pixels as ARGB earlier, we need to use BGRA.
+                    //   Data type of the pixels.
+                    //   And finally, the actual pixels.
+
+                    GL.TexImage2D(TextureTarget.Texture2d,
+                        0,
+                        (int)PixelFormat.Rgba,
+                        image.Width,
+                        image.Height,
+                        0,
+                        PixelFormat.Bgra,
+                        PixelType.UnsignedByte,
+                        Marshal.UnsafeAddrOfPinnedArrayElement(ms.ToArray(), 0)
+                    );
+                }
             }
 
             // Now that our texture is loaded, we can set a few settings to affect how the image appears on rendering.
@@ -70,13 +73,13 @@ namespace Eltitnu.Common
             // You could also use (amongst other options) Nearest, which just grabs the nearest pixel, which makes the texture look pixelated if scaled too far.
             // NOTE: The default settings for both of these are LinearMipmap. If you leave these as default but don't generate mipmaps,
             // your image will fail to render at all (usually resulting in pure black instead).
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            GL.TexParameterf(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameterf(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             // Now, set the wrapping mode. S is for the X axis, and T is for the Y axis.
             // We set this to Repeat so that textures will repeat when wrapped. Not demonstrated here since the texture coordinates exactly match
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
+            GL.TexParameterf(TextureTarget.Texture2d, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
+            GL.TexParameterf(TextureTarget.Texture2d, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);
 
             // Next, generate mipmaps.
             // Mipmaps are smaller copies of the texture, scaled down. Each mipmap level is half the size of the previous one
@@ -85,14 +88,14 @@ namespace Eltitnu.Common
             // This prevents moiré effects, as well as saving on texture bandwidth.
             // Here you can see and read about the morié effect https://en.wikipedia.org/wiki/Moir%C3%A9_pattern
             // Here is an example of mips in action https://en.wikipedia.org/wiki/File:Mipmap_Aliasing_Comparison.png
-            GL.GenerateMipmap(GenerateMipmapTarget.Texture2D);
+            GL.GenerateMipmap(TextureTarget.Texture2d);
 
             return new Texture(handle);
         }
 
         public Texture(int glHandle)
         {
-            Handle = glHandle;
+            Handle = new TextureHandle(glHandle);
         }
 
         // Activate texture
@@ -102,7 +105,7 @@ namespace Eltitnu.Common
         public void Use(TextureUnit unit)
         {
             GL.ActiveTexture(unit);
-            GL.BindTexture(TextureTarget.Texture2D, Handle);
+            GL.BindTexture(TextureTarget.Texture2d, Handle);
         }
     }
 }

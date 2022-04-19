@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK" Version="4.7.1" />
+    <PackageReference Include="OpenTK" Version="5.0.0-pre.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,10 +16,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Shaders/triangle.frag">
+    <None Update="Shaders/shader.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders/triangle.vert">
+    <None Update="Shaders/shader.vert">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources/container.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources/awesomeface.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

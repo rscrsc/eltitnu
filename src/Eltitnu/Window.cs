@@ -1,11 +1,11 @@
-﻿using System;
-using System.IO;
-using Eltitnu.Common;
-using OpenTK.Graphics.OpenGL4;
+﻿using Eltitnu.Common;
+using OpenTK.Graphics;
+using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
+using System.Runtime.InteropServices;
 
 namespace Eltitnu.Eltitnu
 {
@@ -35,16 +35,15 @@ namespace Eltitnu.Eltitnu
             1, 2, 3
         };
 
-        private int _elementBufferObject;
+        private BufferHandle _elementBufferObject;
 
-        private int _vertexBufferObject;
+        private BufferHandle _vertexBufferObject;
 
-        private int _vertexArrayObject;
+        private VertexArrayHandle _vertexArrayObject;
 
         private Shader _shader;
 
         private Texture _texture;
-
         private Texture _texture2;
 
         // The view and projection matrices have been removed as we don't need them here anymore.
@@ -78,21 +77,31 @@ namespace Eltitnu.Eltitnu
             GL.BindVertexArray(_vertexArrayObject);
 
             _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
+            GL.BufferData(
+                BufferTargetARB.ArrayBuffer,
+                _vertices.Length * sizeof(float),
+                Marshal.UnsafeAddrOfPinnedArrayElement(_vertices, 0),
+                BufferUsageARB.StaticDraw
+            );
 
             _elementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
+            GL.BufferData(
+                BufferTargetARB.ElementArrayBuffer,
+                _indices.Length * sizeof(uint),
+                Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
+                BufferUsageARB.StaticDraw
+            );
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
             _shader.Use();
 
-            var vertexLocation = _shader.GetAttribLocation("aPosition");
+            uint vertexLocation = _shader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocation);
             GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
 
-            var texCoordLocation = _shader.GetAttribLocation("aTexCoord");
+            uint texCoordLocation = _shader.GetAttribLocation("aTexCoord");
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
 
@@ -127,7 +136,7 @@ namespace Eltitnu.Eltitnu
             _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            var model = Matrix4d.Identity * Matrix4d.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
