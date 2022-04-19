@@ -225,9 +225,15 @@ namespace Eltitnu.Eltitnu
         {
             base.OnResize(e);
 
-            GL.Viewport(0, 0, Size.X, Size.Y);
+            int width, height;
+            unsafe
+            {
+                GLFW.GetFramebufferSize(this.WindowPtr, out width, out height);
+            }
+            GL.Viewport(0, 0, width, height);
+
             // We need to update the aspect ratio once the window has been resized.
-            _camera.AspectRatio = Size.X / (float)Size.Y;
+            _camera.AspectRatio = width / (float)height;
         }
     }
 }
