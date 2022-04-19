@@ -2,24 +2,20 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 
-namespace Eltitnu.Eltitnu
+namespace Eltitnu
 {
-    public static class Program
+    public static class TriangleProgram
     {
-        public const int WIDTH = 800;
-        public const int HEIGHT = 600;
-        public const float LENGTH_UNIT = 1;
-
         private static void Main()
         {
             var nativeWindowSettings = new NativeWindowSettings()
             {
-                Size = new Vector2i(WIDTH, HEIGHT),
-                Title = "Eltitnu",
+                Size = new Vector2i(800, 600),
+                Title = "LearnOpenTK - Creating a Window",
                 Flags = ContextFlags.ForwardCompatible,
             };
 
-            using (var window = new Window(GameWindowSettings.Default, nativeWindowSettings))
+            using (var window = new TriangleWindow(GameWindowSettings.Default, nativeWindowSettings))
             {
                 window.Run();
             }
