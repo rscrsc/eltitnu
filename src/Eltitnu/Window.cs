@@ -136,7 +136,7 @@ namespace Eltitnu.Eltitnu
             _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            var model = Matrix4d.Identity * Matrix4d.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
+            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
             _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());

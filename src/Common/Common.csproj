@@ -3,10 +3,23 @@
     <RootNamespace>Eltitnu.Common</RootNamespace>
     <AssemblyName>Eltitnu.Common</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OpenTK" Version="5.0.0-pre.6" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenTK\src\OpenAL\OpenTK.OpenAL\OpenTK.OpenAL.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Compute\OpenTK.Compute.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Core\OpenTK.Core.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Graphics\OpenTK.Graphics.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Input\OpenTK.Input.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Mathematics\OpenTK.Mathematics.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Windowing.Common\OpenTK.Windowing.Common.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Windowing.Desktop\OpenTK.Windowing.Desktop.csproj" />
+    <ProjectReference Include="..\OpenTK\src\OpenTK.Windowing.GraphicsLibraryFramework\OpenTK.Windowing.GraphicsLibraryFramework.csproj" />
   </ItemGroup>
 </Project>

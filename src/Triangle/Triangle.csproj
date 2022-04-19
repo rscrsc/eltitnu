@@ -1,28 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Eltitnu.Eltitnu</RootNamespace>
-    <AssemblyName>Eltitnu.Eltitnu</AssemblyName>
+    <RootNamespace>Eltitnu.Triangle</RootNamespace>
+    <AssemblyName>Eltitnu.Triangle</AssemblyName>
     <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="Shaders/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Common/Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Shaders/shader.frag">
+    <None Update="Shaders/triangle.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Shaders/shader.vert">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources/container.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources/awesomeface.png">
+    <None Update="Shaders/triangle.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

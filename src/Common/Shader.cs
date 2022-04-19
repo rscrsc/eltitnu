@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
-
+using System.Runtime.InteropServices;
 
 namespace Eltitnu.Common
 {
     public class Shader
     {
         private const int MAX_BUF_SIZE = 1024;
-        
+
         public readonly ProgramHandle Handle;
         private readonly Dictionary<string, int> _uniformLocations;
 
@@ -104,10 +104,10 @@ namespace Eltitnu.Common
             GL.Uniform1f(_uniformLocations[name], data);
         }
 
-        public void SetMatrix4(string name, Matrix4d data)
+        public void SetMatrix4(string name, Matrix4 data)
         {
             GL.UseProgram(Handle);
-            GL.UniformMatrix4d(_uniformLocations[name], true, data);
+            GL.UniformMatrix4f(_uniformLocations[name], true, data);
         }
 
         public void SetVector3(string name, Vector3 data)
