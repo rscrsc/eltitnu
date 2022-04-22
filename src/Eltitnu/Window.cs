@@ -120,6 +120,9 @@ namespace Eltitnu.Eltitnu
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorGrabbed = true;
+
+            // Enable Vsync
+            GLFW.SwapInterval(1);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
