@@ -6,6 +6,9 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Eltitnu.Eltitnu
 {
@@ -44,7 +47,6 @@ namespace Eltitnu.Eltitnu
         private Shader _shader;
 
         private Texture _texture;
-        private Texture _texture2;
 
         // The view and projection matrices have been removed as we don't need them here anymore.
         // They can now be found in the new camera class.
@@ -57,8 +59,6 @@ namespace Eltitnu.Eltitnu
         private bool _firstMove = true;
 
         private Vector2 _lastPos;
-
-        private double _time;
 
         public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
             : base(gameWindowSettings, nativeWindowSettings)
@@ -75,6 +75,32 @@ namespace Eltitnu.Eltitnu
 
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
+
+            // Load .dae model file
+            XElement _model = XElement.Load("Resources/Block.dae");
+            XNamespace globalNamespace = "http://www.collada.org/2005/11/COLLADASchema";
+            var geometries = from geometry in _model.Descendants(globalNamespace + "geometry")
+                             select geometry;
+            foreach (var geometry in geometries)
+            {
+                var sources = from source in geometry.Descendants(globalNamespace + "source")
+                              select new
+                              {
+                                  id = source.Attribute("id").Value,
+                                  value = source.Element(globalNamespace + "float_array").Value,
+                              };
+                foreach(var source in sources)
+                {
+                    System.Console.WriteLine($"{source.id} = {source.value}");
+                }
+                var indices = from triangles in geometry.Descendants(globalNamespace + "triangles")
+                               select triangles.Element(globalNamespace + "p").Value;
+                foreach(var indexString in indices)
+                {
+                    System.Console.WriteLine("indices = " + indexString);
+                }
+            }
+
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
@@ -105,14 +131,10 @@ namespace Eltitnu.Eltitnu
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
 
-            _texture = Texture.LoadFromFile("Resources/container.png");
+            _texture = Texture.LoadFromFile("Resources/dirt.png");
             _texture.Use(TextureUnit.Texture0);
 
-            _texture2 = Texture.LoadFromFile("Resources/awesomeface.png");
-            _texture2.Use(TextureUnit.Texture1);
-
             _shader.SetInt("texture0", 0);
-            _shader.SetInt("texture1", 1);
 
             // We initialize the camera so that it is 3 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
@@ -123,28 +145,29 @@ namespace Eltitnu.Eltitnu
 
             // Enable Vsync
             GLFW.SwapInterval(1);
+
+            // Set texture filter
+            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
 
-            _time += 4.0 * e.Time;
-
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.BindVertexArray(_vertexArrayObject);
 
             _texture.Use(TextureUnit.Texture0);
-            _texture2.Use(TextureUnit.Texture1);
             _shader.Use();
 
-            var model = Matrix4.Identity * Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(_time));
-            _shader.SetMatrix4("model", model);
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            // Print FPS
+            //System.Console.WriteLine("FPS: " + 1.0 / e.Time);
 
             SwapBuffers();
         }
@@ -213,6 +236,7 @@ namespace Eltitnu.Eltitnu
                 _camera.Yaw += deltaX * sensitivity;
                 _camera.Pitch -= deltaY * sensitivity; // Reversed since y-coordinates range from bottom to top
             }
+
         }
 
         // In the mouse wheel function, we manage all the zooming of the camera.
