@@ -2,3 +2,5 @@
 build/
 site/
 .DS_Store
+
+.minecraft/
