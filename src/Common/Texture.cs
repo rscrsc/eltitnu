@@ -24,7 +24,7 @@ namespace Eltitnu.Common
             {
                 // Our Bitmap loads from the top-left pixel, whereas OpenGL loads from the bottom-left, causing the texture to be flipped vertically.
                 // This will correct that, making the texture display properly.
-                image.Mutate(c => c.Resize(30, 30));
+                image.Mutate(c => c.Flip(FlipMode.Vertical));
 
                 // First, we get our pixels from the bitmap we loaded.
                 // Arguments:
@@ -35,21 +35,12 @@ namespace Eltitnu.Common
                 //   Next is the pixel format we want our pixels to be in. In this case, ARGB will suffice.
                 //   We have to fully qualify the name because OpenTK also has an enum named PixelFormat.
 
-                // TODO: REFACTOR
-                // A little bit ugly!!!
-                // Maybe there are better solutions.
+                Rgba32[] pixelArray = new Rgba32[image.Width * image.Height];
+                image.CopyPixelDataTo(pixelArray);
 
-                var xL = image.Width;
-                var yL = image.Height;
-                var data = new int[image.Width * image.Height];
-                for (var x = 0; x < xL; x++)
-                {
-                    for (var y = 0; y < yL; y++)
-                    {
-                        var color = image[x, y];
-                        data[y * xL + x] = (color.A << 24) | (color.B << 16) | (color.G << 8) | (color.R << 0);
-                    }
-                }
+                var data = new uint[pixelArray.Length];
+                for (var i = 0; i < pixelArray.Length; i++)
+                    data[i] = pixelArray[i].PackedValue;
 
                 // Now that our pixels are prepared, it's time to generate a texture. We do this with GL.TexImage2D.
                 // Arguments:
@@ -65,7 +56,7 @@ namespace Eltitnu.Common
 
                 unsafe
                 {
-                    fixed (int* dataptr = data)
+                    fixed (uint* dataptr = data)
                     {
                         GL.TexImage2D(TextureTarget.Texture2d,
                             0,
