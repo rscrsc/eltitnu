@@ -46,7 +46,7 @@ namespace Eltitnu.Common
         {
             if(ElementCount == 0)
             {
-                throw new Exception("No Elements Added");
+                throw new Exception("No ElementCount Set");
             }
             int arrayLength = 0;
             foreach (var item in BufferAttributes)
