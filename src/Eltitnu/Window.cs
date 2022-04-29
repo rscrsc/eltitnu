@@ -22,7 +22,7 @@ namespace Eltitnu.Eltitnu
     // This will explained more in depth in the web version, however it pretty much gives us the same result
     // as if the view itself was moved.
     public class Window : GameWindow
-    {
+    {/*
         private readonly float[] _vertices =
         {
             // Position         Texture coordinates
@@ -30,14 +30,14 @@ namespace Eltitnu.Eltitnu
              0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
             -0.5f,  0.5f, 0.0f, 0.0f, 1.0f  // top left
-        };
+        };*/
 
         private readonly uint[] _indices =
         {
             0, 1, 3,
             1, 2, 3
         };
-
+        
         private BufferHandle _elementBufferObject;
 
         private BufferHandle _vertexBufferObject;
@@ -79,6 +79,10 @@ namespace Eltitnu.Eltitnu
             // Load .dae model file
             XElement _model = XElement.Load("Resources/Block.dae");
             XNamespace globalNamespace = "http://www.collada.org/2005/11/COLLADASchema";
+
+            BufferArray vertexBuffer = new();
+            //List<float> _indices = new();
+
             var geometries = from geometry in _model.Descendants(globalNamespace + "geometry")
                              select geometry;
             foreach (var geometry in geometries)
@@ -89,9 +93,12 @@ namespace Eltitnu.Eltitnu
                                   id = source.Attribute("id").Value,
                                   value = source.Element(globalNamespace + "float_array").Value,
                               };
-                foreach(var source in sources)
+                var model = sources.ToDictionary(x => x.id, x => x.value);
+                vertexBuffer.setElementCount(12);
+                vertexBuffer.AddAttribute(0, "pos", 3, 0, 3);
+                foreach (var nums in model["Cube-mesh-positions"].Split(' '))
                 {
-                    System.Console.WriteLine($"{source.id} = {source.value}");
+                    vertexBuffer.AddValue(0, float.Parse(nums));
                 }
                 var indices = from triangles in geometry.Descendants(globalNamespace + "triangles")
                                select triangles.Element(globalNamespace + "p").Value;
@@ -100,14 +107,17 @@ namespace Eltitnu.Eltitnu
                     System.Console.WriteLine("indices = " + indexString);
                 }
             }
+            foreach (var item in vertexBuffer.ToArray())
+                System.Console.Write(item.ToString() + ' ');
+            //System.Console.WriteLine(string.Join("\n", vertexBuffer.ToArray()));
 
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
             GL.BufferData(
                 BufferTargetARB.ArrayBuffer,
-                _vertices.Length * sizeof(float),
-                Marshal.UnsafeAddrOfPinnedArrayElement(_vertices, 0),
+                vertexBuffer.ElementCount * sizeof(float),
+                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer.ToArray(), 0),
                 BufferUsageARB.StaticDraw
             );
 
