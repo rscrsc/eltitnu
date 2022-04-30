@@ -80,8 +80,8 @@ namespace Eltitnu.Eltitnu
             XElement _model = XElement.Load("Resources/Block.dae");
             XNamespace globalNamespace = "http://www.collada.org/2005/11/COLLADASchema";
 
-            BufferArray vertexBuffer = new();
-            //List<float> _indices = new();
+            BufferArray vertexBuffer = new("TO_ARRAY");
+            List<float> _indices = new();
 
             var geometries = from geometry in _model.Descendants(globalNamespace + "geometry")
                              select geometry;
@@ -101,15 +101,14 @@ namespace Eltitnu.Eltitnu
                     vertexBuffer.AddValue(0, float.Parse(nums));
                 }
                 var indices = from triangles in geometry.Descendants(globalNamespace + "triangles")
-                               select triangles.Element(globalNamespace + "p").Value;
-                foreach(var indexString in indices)
+                              select triangles.Element(globalNamespace + "p").Value;
+                foreach (var indexString in indices)
                 {
                     System.Console.WriteLine("indices = " + indexString);
                 }
             }
             foreach (var item in vertexBuffer.ToArray())
                 System.Console.Write(item.ToString() + ' ');
-            //System.Console.WriteLine(string.Join("\n", vertexBuffer.ToArray()));
 
 
             _vertexBufferObject = GL.GenBuffer();

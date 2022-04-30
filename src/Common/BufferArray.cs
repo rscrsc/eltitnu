@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Eltitnu.Common
 {
@@ -15,10 +16,23 @@ namespace Eltitnu.Common
     {
         private Dictionary<int, BufferAttribute> BufferAttributes = new();
         public int ElementCount = 0;
-        public BufferArray() { }
+        private bool isFromMode = false;
+        private bool isSetElementCount = false;
+        public BufferArray(string mode)
+        {
+            if(mode == "FROM_ARRAY")
+            {
+                isFromMode = true;
+            }
+            else if(mode == "To_ARRAY")
+            {
+
+            }
+        }
         public void setElementCount(int count)
         {
             ElementCount = count;
+            isSetElementCount = true;
         }
         public void AddAttribute(int index, string name, int size, int offset, int stride)
         {
@@ -44,16 +58,11 @@ namespace Eltitnu.Common
         }
         public Array ToArray()
         {
-            if(ElementCount == 0)
+            if(isSetElementCount == false)
             {
                 throw new Exception("No ElementCount Set");
             }
-            int arrayLength = 0;
-            foreach (var item in BufferAttributes)
-            {
-                arrayLength += item.Value.stride;
-            }
-            arrayLength *= ElementCount;
+            int arrayLength = BufferAttributes.First().Value.stride * ElementCount;
             float[] array = new float[arrayLength];
             foreach (var item in BufferAttributes)
             {
@@ -70,6 +79,31 @@ namespace Eltitnu.Common
                 }
             }
             return array;
+        }
+
+        public void ReadArray(float[] array)
+        {
+            if(isFromMode == false)
+            {
+                throw new Exception("Not in FROM_ARRAY Mode");
+            }
+            else if(BufferAttributes.Count == 0)
+            {
+                throw new Exception("No Attributes Set");
+            }
+            foreach(var item in BufferAttributes)
+            {
+                var attribute = item.Value;
+                int attPtr = attribute.offset;
+                for (int i = 0; i < ElementCount; i++)
+                {
+                    for (int j = 0; j < attribute.size; j++)
+                    {
+                        attribute.values.Add(array[attPtr + j]);
+                    }
+                    attPtr += attribute.stride;
+                }
+            }
         }
     }
 }
