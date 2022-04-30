@@ -6,9 +6,6 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
 
 namespace Eltitnu.Eltitnu
 {
@@ -22,23 +19,8 @@ namespace Eltitnu.Eltitnu
     // This will explained more in depth in the web version, however it pretty much gives us the same result
     // as if the view itself was moved.
     public class Window : GameWindow
-    {/*
-        private readonly float[] _vertices =
-        {
-            // Position         Texture coordinates
-             0.5f,  0.5f, 0.0f, 1.0f, 1.0f, // top right
-             0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f, 0.0f, 1.0f  // top left
-        };*/
-
-        private readonly uint[] _indices =
-        {
-            0, 1, 3,
-            1, 2, 3
-        };
-        
-        private BufferHandle _elementBufferObject;
+    {
+        //private BufferHandle _elementBufferObject;
 
         private BufferHandle _vertexBufferObject;
 
@@ -76,69 +58,41 @@ namespace Eltitnu.Eltitnu
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            // Load .dae model file
-            XElement _model = XElement.Load("Resources/Block.dae");
-            XNamespace globalNamespace = "http://www.collada.org/2005/11/COLLADASchema";
-
-            BufferArray vertexBuffer = new("TO_ARRAY");
-            List<float> _indices = new();
-
-            var geometries = from geometry in _model.Descendants(globalNamespace + "geometry")
-                             select geometry;
-            foreach (var geometry in geometries)
-            {
-                var sources = from source in geometry.Descendants(globalNamespace + "source")
-                              select new
-                              {
-                                  id = source.Attribute("id").Value,
-                                  value = source.Element(globalNamespace + "float_array").Value,
-                              };
-                var model = sources.ToDictionary(x => x.id, x => x.value);
-                vertexBuffer.setElementCount(12);
-                vertexBuffer.AddAttribute(0, "pos", 3, 0, 3);
-                foreach (var nums in model["Cube-mesh-positions"].Split(' '))
-                {
-                    vertexBuffer.AddValue(0, float.Parse(nums));
-                }
-                var indices = from triangles in geometry.Descendants(globalNamespace + "triangles")
-                              select triangles.Element(globalNamespace + "p").Value;
-                foreach (var indexString in indices)
-                {
-                    System.Console.WriteLine("indices = " + indexString);
-                }
-            }
-            foreach (var item in vertexBuffer.ToArray())
-                System.Console.Write(item.ToString() + ' ');
-
+            COLLADA block = new COLLADA("Resources/Block.dae");
+            float[] vertexBuffer = block.Generate();
 
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
             GL.BufferData(
                 BufferTargetARB.ArrayBuffer,
-                vertexBuffer.ElementCount * sizeof(float),
-                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer.ToArray(), 0),
+                vertexBuffer.Length * sizeof(float),
+                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer, 0),
                 BufferUsageARB.StaticDraw
             );
 
-            _elementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
-            GL.BufferData(
-                BufferTargetARB.ElementArrayBuffer,
-                _indices.Length * sizeof(uint),
-                Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
-                BufferUsageARB.StaticDraw
-            );
+            //_elementBufferObject = GL.GenBuffer();
+            //GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
+            //GL.BufferData(
+            //    BufferTargetARB.ElementArrayBuffer,
+            //    _indices.Length * sizeof(uint),
+            //    Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
+            //    BufferUsageARB.StaticDraw
+            //);
 
             _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
             _shader.Use();
 
-            uint vertexLocation = _shader.GetAttribLocation("aPosition");
+            uint vertexLocation = _shader.GetAttribLocation("inPosition");
             GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
+            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
 
-            uint texCoordLocation = _shader.GetAttribLocation("aTexCoord");
+            uint normalLocation = _shader.GetAttribLocation("inNormal");
+            GL.EnableVertexAttribArray(normalLocation);
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+
+            uint texCoordLocation = _shader.GetAttribLocation("inTexCoord");
             GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 
             _texture = Texture.LoadFromFile("Resources/dirt.png");
             _texture.Use(TextureUnit.Texture0);
@@ -157,6 +111,7 @@ namespace Eltitnu.Eltitnu
 
             // Set texture filter
             GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -173,7 +128,8 @@ namespace Eltitnu.Eltitnu
             _shader.SetMatrix4("view", _camera.GetViewMatrix());
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
-            GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
             // Print FPS
             //System.Console.WriteLine("FPS: " + 1.0 / e.Time);

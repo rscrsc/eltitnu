@@ -36,6 +36,10 @@ namespace Eltitnu.Common
         }
         public void AddAttribute(int index, string name, int size, int offset, int stride)
         {
+            if (BufferAttributes.ContainsKey(index))
+            {
+                throw new Exception("Attribute Index exists");
+            }
             var newBufferAttribute = new BufferAttribute()
             {
                 name = name,
@@ -81,6 +85,7 @@ namespace Eltitnu.Common
             return array;
         }
 
+        // TODO: Read mode is useless so far
         public void ReadArray(float[] array)
         {
             if(isFromMode == false)
