@@ -30,6 +30,8 @@ namespace Eltitnu.Eltitnu
 
         private Texture _texture;
 
+        COLLADA block = new COLLADA("Resources/creeper.dae");
+
         // The view and projection matrices have been removed as we don't need them here anymore.
         // They can now be found in the new camera class.
 
@@ -58,7 +60,6 @@ namespace Eltitnu.Eltitnu
             _vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(_vertexArrayObject);
 
-            COLLADA block = new COLLADA("Resources/Block.dae");
             float[] vertexBuffer = block.Generate();
 
             _vertexBufferObject = GL.GenBuffer();
@@ -94,7 +95,7 @@ namespace Eltitnu.Eltitnu
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 
-            _texture = Texture.LoadFromFile("Resources/dirt.png");
+            _texture = Texture.LoadFromFile("Resources/creeper.png");
             _texture.Use(TextureUnit.Texture0);
 
             _shader.SetInt("texture0", 0);
@@ -110,7 +111,7 @@ namespace Eltitnu.Eltitnu
             GLFW.SwapInterval(1);
 
             // Set texture filter
-            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            //GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
             GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
         }
 
@@ -129,7 +130,7 @@ namespace Eltitnu.Eltitnu
             _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
 
             //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, block.triangleCount * 3);
 
             // Print FPS
             //System.Console.WriteLine("FPS: " + 1.0 / e.Time);

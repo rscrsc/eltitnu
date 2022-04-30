@@ -7,6 +7,7 @@ namespace Eltitnu.Common
     public class COLLADA
     {
         public BufferArray vertexBuffer = new("TO_ARRAY");
+        public int triangleCount;
         public COLLADA(string path)
         {
             // Load.dae model file
@@ -17,40 +18,30 @@ namespace Eltitnu.Common
                              select geometry;
             foreach (var geometry in geometries)
             {
-                var sources = from source in geometry.Descendants(globalNamespace + "source")
-                              select new
-                              {
-                                  id = source.Attribute("id").Value,
-                                  value = source.Element(globalNamespace + "float_array").Value,
-                              };
-                var model = sources.ToDictionary(x => x.id, x => x.value);
-
+                var sources = geometry.Descendants(globalNamespace + "source").Select((source, index) => new {source, index});
+                
                 // Load sources
-                // - TODO: Key names below may not be that if the model changes
-                //   ? How to get KeyValue Pairs one by one in my read order 
                 List<float>[] sourceArrays = new List<float>[3]
                 {
                     new(), new(), new()
                 };
-                foreach (var nums in model["Cube-mesh-positions"].Split(' '))
                 {
-                    sourceArrays[0].Add(float.Parse(nums));
-                }
-                List<float> normal = new List<float>();
-                foreach(var nums in model["Cube-mesh-normals"].Split(' '))
-                {
-                    sourceArrays[1].Add(float.Parse(nums));
-                }
-                List<float> texcoord = new List<float>();
-                foreach( var nums in model["Cube-mesh-map-0"].Split (' '))
-                {
-                    sourceArrays[2].Add(float.Parse(nums));
+                    int i = 0;
+                    foreach (var source in sources)
+                    {
+                        foreach (var nums in source.source.Value.ToString().Split(' '))
+                        {
+                            sourceArrays[i].Add(float.Parse(nums));
+                        }
+                        i++;
+                    }
                 }
 
                 // Load Triangles
                 var counts = from triangles in geometry.Descendants(globalNamespace + "triangles")
                              select triangles.Attribute("count").Value;
                 int triangleCount = int.Parse(counts.First());
+                this.triangleCount = triangleCount;
 
                 var indices = from triangles in geometry.Descendants(globalNamespace + "triangles")
                               select triangles.Element(globalNamespace + "p").Value;
@@ -66,7 +57,7 @@ namespace Eltitnu.Common
                 vertexBuffer.AddAttribute(1, "NORMAL", 3, 3, 8);
                 vertexBuffer.AddAttribute(2, "TEXCOORD", 2, 6, 8);
 
-                // Fill in sources
+
                 int[] sizes = new int[3]{3, 3, 2};
                 for(int i = 0; i < indexBuffer.Count; i++)
                 {
