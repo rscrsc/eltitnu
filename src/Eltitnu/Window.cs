@@ -9,35 +9,10 @@ using System.Runtime.InteropServices;
 
 namespace Eltitnu.Eltitnu
 {
-    // We now have a rotating rectangle but how can we make the view move based on the users input?
-    // In this tutorial we will take a look at how you could implement a camera class
-    // and start responding to user input.
-    // You can move to the camera class to see a lot of the new code added.
-    // Otherwise you can move to Load to see how the camera is initialized.
-
-    // In reality, we can't move the camera but we actually move the rectangle.
-    // This will explained more in depth in the web version, however it pretty much gives us the same result
-    // as if the view itself was moved.
     public class Window : GameWindow
     {
-        //private BufferHandle _elementBufferObject;
+        private Renderer _renderer = new Renderer();
 
-        private BufferHandle _vertexBufferObject;
-
-        private VertexArrayHandle _vertexArrayObject;
-
-        private Shader _shader;
-
-        private Texture _texture;
-
-        COLLADA block = new COLLADA("Resources/creeper.dae");
-
-        // The view and projection matrices have been removed as we don't need them here anymore.
-        // They can now be found in the new camera class.
-
-        // We need an instance of the new camera class so it can manage the view and projection matrix code.
-        // We also need a boolean set to true to detect whether or not the mouse has been moved for the first time.
-        // Finally, we add the last position of the mouse so we can calculate the mouse offset easily.
         private Camera _camera;
 
         private bool _firstMove = true;
@@ -53,66 +28,23 @@ namespace Eltitnu.Eltitnu
         {
             base.OnLoad();
 
-            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
 
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
+            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            
+            _renderer.PrepareRender();
 
-            float[] vertexBuffer = block.Generate();
-
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(
-                BufferTargetARB.ArrayBuffer,
-                vertexBuffer.Length * sizeof(float),
-                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer, 0),
-                BufferUsageARB.StaticDraw
-            );
-
-            //_elementBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
-            //GL.BufferData(
-            //    BufferTargetARB.ElementArrayBuffer,
-            //    _indices.Length * sizeof(uint),
-            //    Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
-            //    BufferUsageARB.StaticDraw
-            //);
-
-            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-            _shader.Use();
-
-            uint vertexLocation = _shader.GetAttribLocation("inPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-
-            uint normalLocation = _shader.GetAttribLocation("inNormal");
-            GL.EnableVertexAttribArray(normalLocation);
-            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
-
-            uint texCoordLocation = _shader.GetAttribLocation("inTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
-
-            _texture = Texture.LoadFromFile("Resources/creeper.png");
-            _texture.Use(TextureUnit.Texture0);
-
-            _shader.SetInt("texture0", 0);
-
-            // We initialize the camera so that it is 3 units back from where the rectangle is.
+            // We initialize the camera so that it is 5 units back from where the rectangle is.
             // We also give it the proper aspect ratio.
-            _camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+            _camera = new Camera(Vector3.UnitZ * 5, Size.X / (float)Size.Y);
 
             // We make the mouse cursor invisible and captured so we can have proper FPS-camera movement.
             CursorGrabbed = true;
 
             // Enable Vsync
             GLFW.SwapInterval(1);
-
-            // Set texture filter
-            //GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -121,16 +53,7 @@ namespace Eltitnu.Eltitnu
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            GL.BindVertexArray(_vertexArrayObject);
-
-            _texture.Use(TextureUnit.Texture0);
-            _shader.Use();
-
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
-
-            //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, block.triangleCount * 3);
+            _renderer.Render(_camera);
 
             // Print FPS
             //System.Console.WriteLine("FPS: " + 1.0 / e.Time);
