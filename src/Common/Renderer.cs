@@ -137,10 +137,5 @@ namespace Eltitnu.Common
 
             return renderData;
         }
-
-        private void CleanObject()
-        {
-            //TODO
-        }
     }
 }
