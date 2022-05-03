@@ -7,100 +7,31 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace Eltitnu.Common
 {
-    internal class ObjectRenderer
+    internal class ObjectRenderData
     {
         //private BufferHandle _elementBufferObject;
 
-        private BufferHandle _vertexBufferObject;
+        internal BufferHandle _vertexBufferObject;
 
-        private VertexArrayHandle _vertexArrayObject;
+        internal VertexArrayHandle _vertexArrayObject;
 
-        COLLADA _model;
+        internal COLLADA _model;
 
-        private Shader _shader;
+        internal Shader _shader;
 
-        private Texture _texture;
-        internal void RenderObject(GameObject _obj, Camera _camera)
-        {
-
-            GL.BindVertexArray(_vertexArrayObject);
-
-            _texture.Use(TextureUnit.Texture0);
-            _shader.Use();
-
-            _shader.SetMatrix4("translation", Matrix4.CreateTranslation(_obj.position.Xyz));
-            _shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
-
-            //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, _model.triangleCount * 3);
-        }
-
-        internal void PrepareRenderObject(TexturedModel _tmodel)
-        {
-            _vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(_vertexArrayObject);
-
-            _model = _tmodel.model;
-            float[] vertexBuffer = _model.Generate();
-
-            _vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(
-                BufferTargetARB.ArrayBuffer,
-                vertexBuffer.Length * sizeof(float),
-                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer, 0),
-                BufferUsageARB.StaticDraw
-            );
-
-            //_elementBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
-            //GL.BufferData(
-            //    BufferTargetARB.ElementArrayBuffer,
-            //    _indices.Length * sizeof(uint),
-            //    Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
-            //    BufferUsageARB.StaticDraw
-            //);
-
-            _shader = _tmodel.shader;
-            _shader.Use();
-
-            uint vertexLocation = _shader.GetAttribLocation("inPosition");
-            GL.EnableVertexAttribArray(vertexLocation);
-            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
-
-            uint normalLocation = _shader.GetAttribLocation("inNormal");
-            GL.EnableVertexAttribArray(normalLocation);
-            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
-
-            uint texCoordLocation = _shader.GetAttribLocation("inTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
-
-            _texture = _tmodel.texture;
-            _texture.Use(TextureUnit.Texture0);
-
-            // Set texture filter
-            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-            GL.TextureParameteri(_texture.Handle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-
-            _shader.SetInt("texture0", 0);
-        }
-
-        internal void CleanObject()
-        {
-            //TODO
-        }
-
+        internal Texture _texture;
     }
+ 
     public class Renderer
     {
-        private ObjectRenderer _objectRender = new ObjectRenderer();
         // private Dictionary<TexturedModel, List<GameObject>> _objects = World.GameObjects;
         private Dictionary<TexturedModel, List<GameObject>> _objects = new();
+
+        private Dictionary<ObjectRenderData, List<GameObject>> PreparedGameObjects;
 
         // for test
         private TexturedModel test, test2;
@@ -118,19 +49,17 @@ namespace Eltitnu.Common
             _objects.Add(test, testo);
             _objects.Add(test2, testo2);
 
-            foreach (var m in _objects.Keys)
-            {
-                _objectRender.PrepareRenderObject(m);
-            }
+            var map = _objects.Select(item => new { key = PrepareRenderObject(item.Key), value = item.Value });
+            PreparedGameObjects = map.ToDictionary(item => item.key, item => item.value);
         }
 
         public void Render(Camera _camera)
         {
-            foreach (var m in _objects.Values)
+            foreach (var m in PreparedGameObjects)
             {
-                foreach (var o in m)
+                foreach (var o in m.Value)
                 {
-                    _objectRender.RenderObject(o, _camera);
+                    RenderObject(o, m.Key, _camera);
                 }
             }
         }
@@ -138,6 +67,80 @@ namespace Eltitnu.Common
         public void Clean()
         {
             // TODO: Do unbinds here
+        }
+        private void RenderObject(GameObject _obj, ObjectRenderData _data, Camera _camera)
+        {
+
+            GL.BindVertexArray(_data._vertexArrayObject);
+
+            _data._texture.Use(TextureUnit.Texture0);
+            _data._shader.Use();
+
+            _data._shader.SetMatrix4("translation", Matrix4.CreateTranslation(_obj.position.Xyz));
+            _data._shader.SetMatrix4("view", _camera.GetViewMatrix());
+            _data._shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
+
+            //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, _data._model.triangleCount * 3);
+        }
+
+        private ObjectRenderData PrepareRenderObject(TexturedModel _tmodel)
+        {
+            ObjectRenderData renderData = new ObjectRenderData();
+            renderData._vertexArrayObject = GL.GenVertexArray();
+            GL.BindVertexArray(renderData._vertexArrayObject);
+
+            renderData._model = _tmodel.model;
+            float[] vertexBuffer = renderData._model.Generate();
+
+            renderData._vertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTargetARB.ArrayBuffer, renderData._vertexBufferObject);
+            GL.BufferData(
+                BufferTargetARB.ArrayBuffer,
+                vertexBuffer.Length * sizeof(float),
+                Marshal.UnsafeAddrOfPinnedArrayElement(vertexBuffer, 0),
+                BufferUsageARB.StaticDraw
+            );
+
+            //_elementBufferObject = GL.GenBuffer();
+            //GL.BindBuffer(BufferTargetARB.ElementArrayBuffer, _elementBufferObject);
+            //GL.BufferData(
+            //    BufferTargetARB.ElementArrayBuffer,
+            //    _indices.Length * sizeof(uint),
+            //    Marshal.UnsafeAddrOfPinnedArrayElement(_indices, 0),
+            //    BufferUsageARB.StaticDraw
+            //);
+
+            renderData._shader = _tmodel.shader;
+            renderData._shader.Use();
+
+            uint vertexLocation = renderData._shader.GetAttribLocation("inPosition");
+            GL.EnableVertexAttribArray(vertexLocation);
+            GL.VertexAttribPointer(vertexLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
+
+            uint normalLocation = renderData._shader.GetAttribLocation("inNormal");
+            GL.EnableVertexAttribArray(normalLocation);
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+
+            uint texCoordLocation = renderData._shader.GetAttribLocation("inTexCoord");
+            GL.EnableVertexAttribArray(texCoordLocation);
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
+
+            renderData._texture = _tmodel.texture;
+            renderData._texture.Use(TextureUnit.Texture0);
+
+            // Set texture filter
+            GL.TextureParameteri(renderData._texture.Handle, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+            GL.TextureParameteri(renderData._texture.Handle, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+
+            renderData._shader.SetInt("texture0", 0);
+
+            return renderData;
+        }
+
+        private void CleanObject()
+        {
+            //TODO
         }
     }
 }
