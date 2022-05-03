@@ -13,7 +13,7 @@ namespace Eltitnu.Common
 {
     internal class ObjectRenderData
     {
-        //private BufferHandle _elementBufferObject;
+        //internal BufferHandle _elementBufferObject;
 
         internal BufferHandle _vertexBufferObject;
 
@@ -25,13 +25,26 @@ namespace Eltitnu.Common
 
         internal Texture _texture;
     }
+
+    internal class PreparedRenderPair
+    {
+        internal ObjectRenderData _data;
+        internal List<GameObject> _objects;
+
+        internal PreparedRenderPair(ObjectRenderData data, List<GameObject> objects)
+        {
+            _data = data;
+            _objects = objects;
+        }
+
+    }
  
     public class Renderer
     {
         // private Dictionary<TexturedModel, List<GameObject>> _objects = World.GameObjects;
         private Dictionary<TexturedModel, List<GameObject>> _objects = new();
 
-        private Dictionary<ObjectRenderData, List<GameObject>> PreparedGameObjects;
+        private List<PreparedRenderPair> PreparedGameObjects;
 
         // for test
         private TexturedModel test, test2;
@@ -49,17 +62,16 @@ namespace Eltitnu.Common
             _objects.Add(test, testo);
             _objects.Add(test2, testo2);
 
-            var map = _objects.Select(item => new { key = PrepareRenderObject(item.Key), value = item.Value });
-            PreparedGameObjects = map.ToDictionary(item => item.key, item => item.value);
+            PreparedGameObjects = _objects.Select(item => new PreparedRenderPair(PrepareRenderObject(item.Key), item.Value)).ToList();
         }
 
         public void Render(Camera _camera)
         {
             foreach (var m in PreparedGameObjects)
             {
-                foreach (var o in m.Value)
+                foreach (var o in m._objects)
                 {
-                    RenderObject(o, m.Key, _camera);
+                    RenderObject(o, m._data, _camera);
                 }
             }
         }
