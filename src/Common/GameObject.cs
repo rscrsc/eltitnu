@@ -7,12 +7,9 @@ using OpenTK.Mathematics;
 
 namespace Eltitnu.Common
 {
-    //public abstract class GameObject
-    public class GameObject
+    public abstract class GameObject
     {
         public Vector4 position;
-
-        // TODO: Add rotation information
 
         public GameObject(Vector4 position)
         {

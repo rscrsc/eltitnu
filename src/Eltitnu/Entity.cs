@@ -4,11 +4,12 @@ using Eltitnu.Common;
 
 namespace Eltitnu.Eltitnu
 {
-	//public class Entity : GameObject
-	//{
-	//	public Vector2 Position { get; set; }
-	//	public string TexturePath { get; set; }
-		
-	//}
+    public class Entity : GameObject
+    {
+        public Entity(Vector4 position) : base(position)
+        {
+            this.position = position;
+        }
+    }
 }
 

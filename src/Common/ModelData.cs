@@ -4,11 +4,11 @@ using System.Xml.Linq;
 
 namespace Eltitnu.Common
 {
-    public class COLLADA
+    public class ModelData
     {
         public BufferArray vertexBuffer = new("TO_ARRAY");
         public int triangleCount;
-        public COLLADA(string path)
+        public void LoadFromCOLLADA(string path)
         {
             // Load.dae model file
             XElement file = XElement.Load(path);

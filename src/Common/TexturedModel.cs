@@ -2,7 +2,7 @@
 {
 	public class TexturedModel
 	{
-		public COLLADA model;
+		public ModelData model;
 
 		public Shader shader;
 
@@ -12,7 +12,8 @@
 		//      If we construct it in wrong places, there will be a binding error
 		public TexturedModel(string modelPath, string vertexShaderPath, string fragmentShaderPath, string texturePath)
         {
-			model = new COLLADA(modelPath);
+			model = new ModelData();
+			model.LoadFromCOLLADA(modelPath);
 			shader = new Shader(vertexShaderPath, fragmentShaderPath);
 			texture = Texture.LoadFromFile(texturePath);
 		}

@@ -6,6 +6,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Desktop;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Eltitnu.Eltitnu
 {
@@ -33,7 +34,12 @@ namespace Eltitnu.Eltitnu
             GL.CullFace(CullFaceMode.Back);
 
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            
+
+            //for test
+            List<GameObject> testo = new() { new Mob(new Vector4(-3f, 0f, 0f, 1f)), new Mob(new Vector4(0f, 0f, 0f, 1f)), new Mob(new Vector4(3f, 0f, 0f, 1f)) };
+
+            World.Entities.Add(new TexturedModel("Resources/creeper.dae", "Shaders/shader.vert", "Shaders/shader.frag", "Resources/creeper.png"), testo);
+
             _renderer.PrepareRender();
 
             // We initialize the camera so that it is 5 units back from where the rectangle is.

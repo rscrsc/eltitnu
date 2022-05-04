@@ -1,94 +1,46 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Eltitnu.Common;
+using OpenTK.Mathematics;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Mathematics;
 using System.Runtime.InteropServices;
-using System.Linq;
 
-namespace Eltitnu.Common
+namespace Eltitnu.Eltitnu
 {
-    public class ObjectRenderData
+    public static class ChunkData
     {
-        //public BufferHandle _elementBufferObject;
-
-        public BufferHandle _vertexBufferObject;
-
-        public VertexArrayHandle _vertexArrayObject;
-
-        public ModelData _model;
-
-        public Shader _shader;
-
-        public Texture _texture;
+        public static readonly int ChunkWidthA = 5, ChunkWidthB = 5, ChunkWidthC = 5;
     }
-
-    internal class PreparedRenderPair
+    public class Chunk
     {
-        internal ObjectRenderData _data;
-        internal List<GameObject> _objects;
-
-        internal PreparedRenderPair(ObjectRenderData data, List<GameObject> objects)
+        public Vector4 position;
+        public Chunk(Vector4 position)
         {
-            _data = data;
-            _objects = objects;
+            this.position = position;
         }
-
-    }
- 
-    public class Renderer
-    {
-        private Dictionary<TexturedModel, List<GameObject>> _objects = World.Entities;
-
-        private List<PreparedRenderPair> PreparedEntities;
-
-        public Renderer()
+        public ObjectRenderData PrepareRenderData()
         {
-        }
-
-        public void PrepareRender()
-        {
-            //TODO: prepare chunks
-            PreparedEntities = _objects.Select(item => new PreparedRenderPair(PrepareRenderObject(item.Key), item.Value)).ToList();
-        }
-
-        public void Render(Camera _camera)
-        {
-            foreach (var m in PreparedEntities)
+            for (int c = 0; c < ChunkData.ChunkWidthC; c++)
             {
-                foreach (var o in m._objects)
+                for(int a = 0; a < ChunkData.ChunkWidthA; a++)
                 {
-                    RenderObject(o, m._data, _camera);
+                    for(var b = 0; b < ChunkData.ChunkWidthB; b++)
+                    {
+
+                    }
                 }
             }
-        }
 
-        public void Clean()
-        {
-            // TODO: Do unbinds here
-        }
-        private void RenderObject(GameObject _obj, ObjectRenderData _data, Camera _camera)
-        {
-
-            GL.BindVertexArray(_data._vertexArrayObject);
-
-            _data._texture.Use(TextureUnit.Texture0);
-            _data._shader.Use();
-
-            _data._shader.SetMatrix4("translation", Matrix4.CreateTranslation(_obj.position.Xyz));
-            _data._shader.SetMatrix4("view", _camera.GetViewMatrix());
-            _data._shader.SetMatrix4("projection", _camera.GetProjectionMatrix());
-
-            //GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, _data._model.triangleCount * 3);
-        }
-
-        private ObjectRenderData PrepareRenderObject(TexturedModel _tmodel)
-        {
-            ObjectRenderData renderData = new ObjectRenderData();
+            ObjectRenderData renderData = new();
             renderData._vertexArrayObject = GL.GenVertexArray();
             GL.BindVertexArray(renderData._vertexArrayObject);
 
-            renderData._model = _tmodel.model;
+            renderData._model.vertexBuffer = new BufferArray("TO_ARRAY");
+            // fill in model data here
             float[] vertexBuffer = renderData._model.Generate();
 
             renderData._vertexBufferObject = GL.GenBuffer();
@@ -109,7 +61,7 @@ namespace Eltitnu.Common
             //    BufferUsageARB.StaticDraw
             //);
 
-            renderData._shader = _tmodel.shader;
+            renderData._shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
             renderData._shader.Use();
 
             uint vertexLocation = renderData._shader.GetAttribLocation("inPosition");
@@ -124,7 +76,7 @@ namespace Eltitnu.Common
             GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 
-            renderData._texture = _tmodel.texture;
+            renderData._texture = Texture.LoadFromFile("Resources/atlas.png");
             renderData._texture.Use(TextureUnit.Texture0);
 
             // Set texture filter
