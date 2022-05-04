@@ -28,11 +28,11 @@ namespace Eltitnu.Eltitnu
             })
         };
 
-        public static Vector2 GetFaceTexCoord(int textureIndex)
+        public static Vector4 GetFaceTexCoord(int textureIndex)
         {
             int row = textureIndex / TextureAtlasSizeByBlock, column = textureIndex % TextureAtlasSizeByBlock;
             int reversedRow = TextureAtlasSizeByBlock - 1 - row, reversedColumn = TextureAtlasSizeByBlock - 1 - column;
-            return new Vector2(1f / TextureAtlasSizeByBlock * reversedColumn, 1f / TextureAtlasSizeByBlock * reversedRow);
+            return new Vector4(1f / TextureAtlasSizeByBlock * reversedColumn, 1f / TextureAtlasSizeByBlock * reversedRow, 1f / TextureAtlasSizeByBlock * (reversedColumn+1), 1f / TextureAtlasSizeByBlock * (reversedRow+1));
         }
     }
     public class Face
